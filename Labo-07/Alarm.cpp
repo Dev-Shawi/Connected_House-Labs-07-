@@ -10,6 +10,7 @@ Alarm::Alarm(int rPin, int gPin, int bPin, int buzzerPin, float* distancePtr)
   
   _setRGB(0, 0, 0);
   noTone(_buzzerPin);
+  _turnOff(); // Éteint tout au démarrage
 }
 
 void Alarm::update() {
@@ -48,12 +49,11 @@ void Alarm::_offState() {
 void Alarm::_watchState() {
   if (*_distance > _distanceTrigger) {
     if (_currentTime - _lastDetectedTime >= _timeoutDelay) {
-      _state = OFF;
+      _turnOffFlag = true; // Déclenche l'extinction via le flag
     }
   } else {
     _lastDetectedTime = _currentTime;
-    _state = ON;
-    _turnOnFlag = true;
+    _turnOnFlag = true; // Déclenche la réactivation
   }
 }
 
@@ -132,9 +132,9 @@ AlarmState Alarm::getState() const {
 }
 
 void Alarm::_setRGB(int r, int g, int b) {
-  analogWrite(_rPin, r);
-  analogWrite(_gPin, g);
-  analogWrite(_bPin, b);
+  analogWrite(_rPin, 255 - r);
+  analogWrite(_gPin, 255 - g);
+  analogWrite(_bPin, 255 - b);
 }
 
 void Alarm::_turnOff() {

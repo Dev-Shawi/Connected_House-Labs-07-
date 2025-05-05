@@ -42,21 +42,22 @@ void setup() {
   alarm.setColourA(255, 0, 0);  // Rouge
   alarm.setColourB(0, 0, 255);   // Bleu
   alarm.setVariationTiming(500);
-  alarm.setDistance(15);
+  alarm.setDistance(20);
   alarm.setTimeout(3000);
 
   // Configuration initiale de la porte
-  porte.setAngleOuvert(60);
+  porte.setAngleOuvert(90);
   porte.setAngleFerme(0);
   porte.setPasParTour(2048);
-  porte.setDistanceOuverture(30);
-  porte.setDistanceFermeture(60);
+  porte.setDistanceOuverture(20);
+  porte.setDistanceFermeture(30);
 
   // Initialisation de l'écran MAX7219
-  u8g2.begin();
-  u8g2.setContrast(5);
-  u8g2.clearBuffer();
-  u8g2.sendBuffer();
+   u8g2.begin();
+   u8g2.setContrast(200); // Contrôle la luminosité
+   u8g2.setPowerSave(0);  // Désactive l'économie d'énergie
+   u8g2.clearBuffer();
+   u8g2.sendBuffer();
 
   delay(2000);
   lcd.clear();
@@ -108,43 +109,40 @@ void lcdTask(unsigned long ct, float distance, float angle) {
   lcd.print(" cm");
 
   lcd.setCursor(0, 1);
-  lcd.print("Porte: ");
+  lcd.print("");
   lcd.print(porte.getEtatTexte());
   lcd.print(" ");
   lcd.print(static_cast<int>(angle));
-  lcd.print("deg");
+  lcd.print(" deg");
 }
 
 void max7219Task(unsigned long ct) {
-  if (isSpecialDisplayActive) {
-    if (ct - specialDisplayStartTime >= 3000) {
-      isSpecialDisplayActive = false;
-      u8g2.clearBuffer();
-      u8g2.sendBuffer();
-      return;
-    }
-
+  if(isSpecialDisplayActive) {
     u8g2.clearBuffer();
     
-    if (specialDisplayType == "OK") {
-      u8g2.drawLine(1, 3, 3, 5);
-      u8g2.drawLine(2, 3, 3, 5);
-      u8g2.drawLine(3, 5, 7, 1);
-      u8g2.drawLine(3, 5, 7, 2);
-    } 
-    else if (specialDisplayType == "ERROR") {
-      u8g2.drawLine(1, 1, 7, 7);
-      u8g2.drawLine(1, 2, 7, 8);
-      u8g2.drawLine(1, 7, 7, 1);
-      u8g2.drawLine(1, 8, 7, 2);
+    if(specialDisplayType == "OK") {
+      // ✔️ Version simplifiée pour 8x8
+      u8g2.drawLine(2, 3, 4, 5);
+      u8g2.drawLine(4, 5, 6, 1);
     }
-    else if (specialDisplayType == "INVALID") {
-      u8g2.drawCircle(4, 4, 3);
-      u8g2.drawDisc(4, 4, 1);
-      u8g2.drawLine(1, 1, 7, 7);
-      u8g2.drawLine(1, 2, 7, 8);
+    else if(specialDisplayType == "ERROR") {
+      // ❌ Croix
+      u8g2.drawLine(1, 1, 6, 6);
+      u8g2.drawLine(1, 6, 6, 1);
+    }
+    else if(specialDisplayType == "INVALID") {
+      // Cercle barré
+      u8g2.drawCircle(3, 3, 2);
+      u8g2.drawLine(1, 1, 5, 5);
     }
     
+    u8g2.sendBuffer();
+    
+    if(ct - specialDisplayStartTime >= 1000) { // Réduire la durée
+      isSpecialDisplayActive = false;
+    }
+  } else {
+    u8g2.clearBuffer();
     u8g2.sendBuffer();
   }
 }
@@ -205,4 +203,5 @@ void activateSpecialDisplay(String type) {
   isSpecialDisplayActive = true;
   specialDisplayType = type;
   specialDisplayStartTime = millis();
+  u8g2.setPowerSave(false);
 }

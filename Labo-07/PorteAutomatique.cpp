@@ -55,15 +55,15 @@ float PorteAutomatique::getAngle() const {
   return _stepper.currentPosition() / (_stepsPerRev / 360.0);
 }
 
-void PorteAutomatique::_ouvertState() {
-  if (_distance > _distanceFermeture) {
-    _fermer();
+void PorteAutomatique::_fermeState() {
+  if (_distance < _distanceOuverture) {  // Si objet trop proche
+    _ouvrir();
   }
 }
 
-void PorteAutomatique::_fermeState() {
-  if (_distance < _distanceOuverture) {
-    _ouvrir();
+void PorteAutomatique::_ouvertState() {
+  if (_distance > _distanceFermeture) {  // Si objet s'éloigne
+    _fermer();
   }
 }
 
